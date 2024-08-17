@@ -39,7 +39,7 @@
  *
  * \acme_license_stop
  *
- * Project: FOCAL2023GPS
+ * Project: Accel
  * Target:  ATSAME51J19A 
  *
  **/

@@ -74,11 +74,12 @@
 #define SUBBUS_BOARD_BOARD_REV "Rev A"
 
 #if SUBBUS_BOARD_SN == 1
-  #define SUBBUS_BOARD_ID 5 // GPS
-  #define SUBBUS_BOARD_BOARD_TYPE "FOCAL GPS"
+  #define SUBBUS_BOARD_ID 6 // Accelerometer
+  #define SUBBUS_BOARD_BOARD_TYPE "FOCAL Accelerometer"
   #define SUBBUS_BOARD_INSTRUMENT_ID 10
   #define SUBBUS_BOARD_INSTRUMENT "FOCAL"
-  #define SUBBUS_BOARD_LOCATION "CB2"
+  #define SUBBUS_BOARD_LOCATION "Forward Roof Box"
+  #define USING_SERIAL_BRIDGE
 #endif
 
 #if ! defined(SUBBUS_BOARD_ID)

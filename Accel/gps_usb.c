@@ -285,7 +285,7 @@ int overflow = 0;
  *
  */
 int usb_ser_write(const char *msg, int n) {
-  int nw = cdc_write(msg, n);
+  int nw = cdc_write((uint8_t*)msg, n);
   if (nw < n) {
     overflow += n-nw;
   }

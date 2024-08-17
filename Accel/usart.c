@@ -5,6 +5,7 @@
 #include "gps_pins.h"
 // #include "uDACS_driver_init.h"
 #include "usart.h"
+#include "serial_num.h"
 
 
 static struct usart_async_descriptor USART_0;
@@ -44,6 +45,14 @@ void USART_0_CLOCK_init() {
 void USART_0_PORT_init() {
   gpio_set_pin_function(PB16, PINMUX_PB16C_SERCOM5_PAD0);
   gpio_set_pin_function(RX, PINMUX_PB17C_SERCOM5_PAD1);
+	// GPIO on PA22
+
+#ifdef USING_SERIAL_BRIDGE
+  // Assert GPIO12 (PA22) to enable transmitter
+	gpio_set_pin_level(GPIO12, true);
+	gpio_set_pin_direction(GPIO12, GPIO_DIRECTION_OUT);
+	gpio_set_pin_function(GPIO12, GPIO_PIN_FUNCTION_OFF);
+#endif
 }
 
 

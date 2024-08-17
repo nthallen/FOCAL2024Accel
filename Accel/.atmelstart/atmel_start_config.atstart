@@ -1121,6 +1121,13 @@ pads:
     mode: Peripheral IO
     user_label: RX
     configuration: null
+  GPIO12:
+    name: PA22
+    definition: Atmel:SAME51_Drivers:0.0.1::SAME51J19A-MF::pad::PA22
+    mode: Digital output
+    user_label: GPIO12
+    configuration:
+      pad_initial_level: High
   PA24:
     name: PA24
     definition: Atmel:SAME51_Drivers:0.0.1::SAME51J19A-MF::pad::PA24
