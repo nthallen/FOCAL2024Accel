@@ -79,6 +79,7 @@
   #define SUBBUS_BOARD_INSTRUMENT_ID 10
   #define SUBBUS_BOARD_INSTRUMENT "FOCAL"
   #define SUBBUS_BOARD_LOCATION "Forward Roof Box"
+  #define HAVE_VIBE_SENSOR
   // #define USING_SERIAL_BRIDGE
   // We must define either CTRL_USB_SER or CTRL_UART. We'll use
   // CTRL_USB_SER for early testing, the CTRL_UART in production.
@@ -92,6 +93,7 @@
 #define SUBBUS_BOARD_INSTRUMENT_ID 10
 #define SUBBUS_BOARD_INSTRUMENT "FOCAL"
 #define SUBBUS_BOARD_LOCATION "Forward Roof Box"
+#define HAVE_VIBE_SENSOR
 #define USING_SERIAL_BRIDGE
 // We must define either CTRL_USB_SER or CTRL_UART. We'll use
 // CTRL_USB_SER for early testing, the CTRL_UART in production.

@@ -43,7 +43,7 @@ void USART_0_CLOCK_init() {
  * Copied from driver_init.c: will need manual editing when that changes
  */
 void USART_0_PORT_init() {
-  gpio_set_pin_function(PB16, PINMUX_PB16C_SERCOM5_PAD0);
+  gpio_set_pin_function(TX, PINMUX_PB16C_SERCOM5_PAD0);
   gpio_set_pin_function(RX, PINMUX_PB17C_SERCOM5_PAD1);
 	// GPIO on PA22
 

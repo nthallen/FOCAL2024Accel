@@ -1,10 +1,12 @@
 /** @file i2c_icm20948.c for uDACS16 */
-#include "driver_temp.h"
+// #include "driver_temp.h"
 #include <utils.h>
 #include <hal_init.h>
 #include <hal_i2c_m_async.h>
 #include <stdint.h>
+#include "Config/peripheral_clk_config.h"
 #include "serial_num.h"
+#include "gps_pins.h"
 #include "i2c_icm20948.h"
 #include "subbus.h"
 #include "rtc_timer.h"

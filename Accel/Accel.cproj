@@ -772,28 +772,10 @@
     <Compile Include="Device_Startup\system_same51.c">
       <SubType>compile</SubType>
     </Compile>
-    <Compile Include="driver_init.c">
-      <SubType>compile</SubType>
-    </Compile>
-    <Compile Include="driver_init.h">
-      <SubType>compile</SubType>
-    </Compile>
     <Compile Include="examples\driver_examples.c">
       <SubType>compile</SubType>
     </Compile>
     <Compile Include="examples\driver_examples.h">
-      <SubType>compile</SubType>
-    </Compile>
-    <Compile Include="gps_drv_init.c">
-      <SubType>compile</SubType>
-    </Compile>
-    <Compile Include="gps_drv_init.h">
-      <SubType>compile</SubType>
-    </Compile>
-    <Compile Include="gps_gps.c">
-      <SubType>compile</SubType>
-    </Compile>
-    <Compile Include="gps_gps.h">
       <SubType>compile</SubType>
     </Compile>
     <Compile Include="gps_main.c">
@@ -1189,9 +1171,6 @@
     <Compile Include="i2c_icm20948.h">
       <SubType>compile</SubType>
     </Compile>
-    <Compile Include="main.c">
-      <SubType>compile</SubType>
-    </Compile>
     <Compile Include="rtc_timer.c">
       <SubType>compile</SubType>
     </Compile>
@@ -1250,12 +1229,6 @@
       <SubType>compile</SubType>
     </Compile>
     <Compile Include="usb\usb_protocol.h">
-      <SubType>compile</SubType>
-    </Compile>
-    <Compile Include="usb_start.c">
-      <SubType>compile</SubType>
-    </Compile>
-    <Compile Include="usb_start.h">
       <SubType>compile</SubType>
     </Compile>
   </ItemGroup>
