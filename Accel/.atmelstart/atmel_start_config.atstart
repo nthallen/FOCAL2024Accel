@@ -1,5 +1,5 @@
 format_version: '2'
-name: FOCAL 2023 GPS
+name: FOCAL 2023 Accelerometer
 versions:
   api: '1.0'
   backend: 1.9.698
@@ -985,6 +985,46 @@ drivers:
     variant: null
     clocks:
       domain_group: null
+  ICM_I2C:
+    user_label: ICM_I2C
+    definition: Atmel:SAME51_Drivers:0.0.1::SAME51J19A-MF::SERCOM2::driver_config_definition::I2C.Master.Standard~2FFast-mode::HAL:Driver:I2C.Master.Async
+    functionality: I2C
+    api: HAL:Driver:I2C_Master_Async
+    configuration:
+      i2c_master_advanced: false
+      i2c_master_arch_dbgstop: Keep running
+      i2c_master_arch_inactout: Disabled
+      i2c_master_arch_lowtout: false
+      i2c_master_arch_mexttoen: false
+      i2c_master_arch_runstdby: false
+      i2c_master_arch_sdahold: 300-600ns hold time
+      i2c_master_arch_sexttoen: false
+      i2c_master_arch_trise: 215
+      i2c_master_baud_rate: 10000
+    optional_signals: []
+    variant:
+      specification: SDA=0, SCL=1
+      required_signals:
+      - name: SERCOM2/PAD/0
+        pad: PA12
+        label: SDA
+      - name: SERCOM2/PAD/1
+        pad: PA13
+        label: SCL
+    clocks:
+      domain_group:
+        nodes:
+        - name: Core
+          input: Generic clock generator 0
+          external: false
+          external_frequency: 0
+        - name: Slow
+          input: Generic clock generator 3
+          external: false
+          external_frequency: 0
+        configuration:
+          core_gclk_selection: Generic clock generator 0
+          slow_gclk_selection: Generic clock generator 3
   USART_0:
     user_label: USART_0
     definition: Atmel:SAME51_Drivers:0.0.1::SAME51J19A-MF::SERCOM5::driver_config_definition::UART::HAL:Driver:USART.Async
@@ -1109,11 +1149,23 @@ drivers:
         configuration:
           usb_gclk_selection: Generic clock generator 0
 pads:
-  PB16:
+  ICM_SDA:
+    name: PA12
+    definition: Atmel:SAME51_Drivers:0.0.1::SAME51J19A-MF::pad::PA12
+    mode: I2C
+    user_label: ICM_SDA
+    configuration: null
+  ICM_SCL:
+    name: PA13
+    definition: Atmel:SAME51_Drivers:0.0.1::SAME51J19A-MF::pad::PA13
+    mode: I2C
+    user_label: ICM_SCL
+    configuration: null
+  TX:
     name: PB16
     definition: Atmel:SAME51_Drivers:0.0.1::SAME51J19A-MF::pad::PB16
     mode: Peripheral IO
-    user_label: PB16
+    user_label: TX
     configuration: null
   RX:
     name: PB17

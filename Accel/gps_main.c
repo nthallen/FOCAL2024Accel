@@ -2,11 +2,13 @@
 extern "C" {
 #endif
 
-#include "gps_drv_init.h"
+// #include "gps_drv_init.h"
+#include <hal_init.h>
 #include "gps_usb.h"
 #include "ser_control.h"
 #include "rtc_timer.h"
-#include "gps_gps.h"
+#include "i2c_icm20948.h"
+#include "ser_control.h"
 
 #ifdef __cplusplus
 }
@@ -15,14 +17,17 @@ extern "C" {
 int main(void)
 {
 	/* Initializes MCU, drivers and middleware */
-	system_init();
+	init_mcu();
 
   if (subbus_add_driver(&sb_base)
    || subbus_add_driver(&sb_fail_sw)
    || subbus_add_driver(&sb_board_desc)
+#ifdef CTRL_USB_SER
    || subbus_add_driver(&sb_usb)
+#endif
    || subbus_add_driver(&sb_rtc)
-   || subbus_add_driver(&sb_gps)
+   || subbus_add_driver(&sb_i2c_icm)
+   || subbus_add_driver(&sb_control)
   ) {
     while (true) ; // some driver is misconfigured.
   }

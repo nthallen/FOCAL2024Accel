@@ -17,6 +17,32 @@ struct timer_descriptor TIMER_0;
 #endif
 
 #if 0
+struct i2c_m_async_desc ICM_I2C;
+
+void ICM_I2C_PORT_init(void)
+{
+  gpio_set_pin_pull_mode(ICM_SDA, GPIO_PULL_OFF);
+  gpio_set_pin_function(ICM_SDA, PINMUX_PA12C_SERCOM2_PAD0);
+  gpio_set_pin_pull_mode(ICM_SCL, GPIO_PULL_OFF);
+  gpio_set_pin_function(ICM_SCL, PINMUX_PA13C_SERCOM2_PAD1);
+}
+
+void ICM_I2C_CLOCK_init(void)
+{
+  hri_gclk_write_PCHCTRL_reg(GCLK, SERCOM2_GCLK_ID_CORE, CONF_GCLK_SERCOM2_CORE_SRC | (1 << GCLK_PCHCTRL_CHEN_Pos));
+  hri_gclk_write_PCHCTRL_reg(GCLK, SERCOM2_GCLK_ID_SLOW, CONF_GCLK_SERCOM2_SLOW_SRC | (1 << GCLK_PCHCTRL_CHEN_Pos));
+  hri_mclk_set_APBBMASK_SERCOM2_bit(MCLK);
+}
+
+void ICM_I2C_init(void)
+{
+  ICM_I2C_CLOCK_init();
+  i2c_m_async_init(&ICM_I2C, SERCOM2);
+  ICM_I2C_PORT_init();
+}
+#endif
+
+#if 0
 /*! The buffer size for USART */
 #define USART_0_BUFFER_SIZE 16
 
@@ -199,6 +225,15 @@ void USB_CTRL_init(void)
 void system_init(void)
 {
 	init_mcu();
+
+  #if 0
+  // GPIO on PA22
+  gpio_set_pin_level(GPIO12, true);
+  gpio_set_pin_direction(GPIO12, GPIO_DIRECTION_OUT);
+  gpio_set_pin_function(GPIO12, GPIO_PIN_FUNCTION_OFF);
+  #endif
+
+  // ICM_I2C_init();
 
 	// USART_0_init();
 

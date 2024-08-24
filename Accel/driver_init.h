@@ -21,14 +21,20 @@ extern "C" {
 #include <hal_io.h>
 #include <hal_sleep.h>
 
+#include <hal_i2c_m_async.h>
 #include <hal_usart_async.h>
 #include <hal_timer.h>
 #include <hpl_tc_base.h>
 
 #include "hal_usb_device.h"
 
+extern struct i2c_m_async_desc       ICM_I2C;
 extern struct usart_async_descriptor USART_0;
 extern struct timer_descriptor       TIMER_0;
+
+void ICM_I2C_PORT_init(void);
+void ICM_I2C_CLOCK_init(void);
+void ICM_I2C_init(void);
 
 void USART_0_PORT_init(void);
 void USART_0_CLOCK_init(void);

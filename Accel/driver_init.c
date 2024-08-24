@@ -19,6 +19,47 @@ struct timer_descriptor       TIMER_0;
 
 static uint8_t USART_0_buffer[USART_0_BUFFER_SIZE];
 
+struct i2c_m_async_desc ICM_I2C;
+
+void ICM_I2C_PORT_init(void)
+{
+
+	gpio_set_pin_pull_mode(ICM_SDA,
+	                       // <y> Pull configuration
+	                       // <id> pad_pull_config
+	                       // <GPIO_PULL_OFF"> Off
+	                       // <GPIO_PULL_UP"> Pull-up
+	                       // <GPIO_PULL_DOWN"> Pull-down
+	                       GPIO_PULL_OFF);
+
+	gpio_set_pin_function(ICM_SDA, PINMUX_PA12C_SERCOM2_PAD0);
+
+	gpio_set_pin_pull_mode(ICM_SCL,
+	                       // <y> Pull configuration
+	                       // <id> pad_pull_config
+	                       // <GPIO_PULL_OFF"> Off
+	                       // <GPIO_PULL_UP"> Pull-up
+	                       // <GPIO_PULL_DOWN"> Pull-down
+	                       GPIO_PULL_OFF);
+
+	gpio_set_pin_function(ICM_SCL, PINMUX_PA13C_SERCOM2_PAD1);
+}
+
+void ICM_I2C_CLOCK_init(void)
+{
+	hri_gclk_write_PCHCTRL_reg(GCLK, SERCOM2_GCLK_ID_CORE, CONF_GCLK_SERCOM2_CORE_SRC | (1 << GCLK_PCHCTRL_CHEN_Pos));
+	hri_gclk_write_PCHCTRL_reg(GCLK, SERCOM2_GCLK_ID_SLOW, CONF_GCLK_SERCOM2_SLOW_SRC | (1 << GCLK_PCHCTRL_CHEN_Pos));
+
+	hri_mclk_set_APBBMASK_SERCOM2_bit(MCLK);
+}
+
+void ICM_I2C_init(void)
+{
+	ICM_I2C_CLOCK_init();
+	i2c_m_async_init(&ICM_I2C, SERCOM2);
+	ICM_I2C_PORT_init();
+}
+
 /**
  * \brief USART Clock initialization function
  *
@@ -41,7 +82,7 @@ void USART_0_CLOCK_init()
 void USART_0_PORT_init()
 {
 
-	gpio_set_pin_function(PB16, PINMUX_PB16C_SERCOM5_PAD0);
+	gpio_set_pin_function(TX, PINMUX_PB16C_SERCOM5_PAD0);
 
 	gpio_set_pin_function(RX, PINMUX_PB17C_SERCOM5_PAD1);
 }
@@ -204,6 +245,7 @@ void system_init(void)
 
 	gpio_set_pin_function(GPIO12, GPIO_PIN_FUNCTION_OFF);
 
+	ICM_I2C_init();
 	USART_0_init();
 
 	TIMER_0_init();

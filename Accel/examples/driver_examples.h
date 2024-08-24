@@ -12,6 +12,8 @@
 extern "C" {
 #endif
 
+void ICM_I2C_example(void);
+
 void USART_0_example(void);
 
 void TIMER_0_example(void);

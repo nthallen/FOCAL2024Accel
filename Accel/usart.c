@@ -7,7 +7,7 @@
 #include "usart.h"
 #include "serial_num.h"
 
-
+#ifdef CTRL_UART
 static struct usart_async_descriptor USART_0;
 /*! Buffer for the receive ringbuffer */
 static uint8_t USART_0_rx_buffer[USART_RX_BUFFER_SIZE];
@@ -139,6 +139,7 @@ void uart_write(const char *msg, int n) {
   }
   uart_flush_output();
 }
+#endif // CRTL_UART
 
 #ifdef __cplusplus
 };

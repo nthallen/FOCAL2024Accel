@@ -10,6 +10,24 @@
 #include "driver_init.h"
 #include "utils.h"
 
+static uint8_t ICM_I2C_example_str[12] = "Hello World!";
+
+void ICM_I2C_tx_complete(struct i2c_m_async_desc *const i2c)
+{
+}
+
+void ICM_I2C_example(void)
+{
+	struct io_descriptor *ICM_I2C_io;
+
+	i2c_m_async_get_io_descriptor(&ICM_I2C, &ICM_I2C_io);
+	i2c_m_async_enable(&ICM_I2C);
+	i2c_m_async_register_callback(&ICM_I2C, I2C_M_ASYNC_TX_COMPLETE, (FUNC_PTR)ICM_I2C_tx_complete);
+	i2c_m_async_set_slaveaddr(&ICM_I2C, 0x12, I2C_M_SEVEN);
+
+	io_write(ICM_I2C_io, ICM_I2C_example_str, 12);
+}
+
 /**
  * Example of using USART_0 to write "Hello World" using the IO abstraction.
  *

@@ -13,7 +13,8 @@ extern subbus_driver_t sb_control;
 #define CONTROL_BASE_ADDR 0x0B
 #define CONTROL_HIGH_ADDR 0x0A
 
-#ifdef CTRL_UART
+#if defined(CTRL_UART)
+
 #include "usart.h"
 #define ctrl_init() uart_init()
 #define ctrl_recv(buf,nbytes) uart_recv(buf,nbytes)
@@ -21,9 +22,9 @@ extern subbus_driver_t sb_control;
 #define ctrl_flush_input() uart_flush_input()
 #define ctrl_flush_output() uart_flush_output()
 #define CTRL_RECV_BUF_SIZE USART_RX_BUFFER_SIZE
-#endif
 
-#ifdef CTRL_USB_SER
+#elif defined(CTRL_USB_SER)
+
 #include "gps_usb.h"
 #define ctrl_init() usb_ser_init()
 #define ctrl_recv(buf,nbytes) usb_ser_recv(buf,nbytes)
@@ -31,6 +32,9 @@ extern subbus_driver_t sb_control;
 #define ctrl_flush_input() usb_ser_flush_input()
 #define ctrl_flush_output() usb_ser_flush_output()
 #define CTRL_RECV_BUF_SIZE CDC_INPUT_BUFFER_SIZE
+
+#else
+#error Must define either CTRL_UART or CTRL_USB_SER in serial_num.h
 #endif
 
 #endif
