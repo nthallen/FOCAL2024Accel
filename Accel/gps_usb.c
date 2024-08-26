@@ -7,6 +7,10 @@
 #include <utils.h>
 #include <hal_init.h>
 
+#include "serial_num.h"
+
+#ifdef CTRL_USB_SER
+
 #include "gps_usb.h"
 #include "usart.h"
 
@@ -309,3 +313,5 @@ subbus_driver_t sb_usb = {
   false, // Not initialized
   0   // Next
 };
+
+#endif // CTRL_USB_SER

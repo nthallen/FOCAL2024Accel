@@ -56,10 +56,10 @@
  */
 // These parameters are common to all boards built with this code
 #define SUBBUS_BOARD_FIRMWARE_REV "V1.0"
-#define SUBBUS_BOARD_BUILD_NUM 1
+#define SUBBUS_BOARD_BUILD_NUM 3
 // #define HAVE_RTC
 // If we include ser_control.c, it should read from the USB
-#define CTRL_USB_SER
+// #define CTRL_USB_SER
 
 /**
  * Build definitions
@@ -75,12 +75,12 @@
 
 #if SUBBUS_BOARD_SN == 1
   #define SUBBUS_BOARD_ID 6 // Accelerometer
-  #define SUBBUS_BOARD_BOARD_TYPE "FOCAL Accelerometer"
+  #define SUBBUS_BOARD_BOARD_TYPE "Accelerometer"
   #define SUBBUS_BOARD_INSTRUMENT_ID 10
   #define SUBBUS_BOARD_INSTRUMENT "FOCAL"
   #define SUBBUS_BOARD_LOCATION "Forward Roof Box"
   #define HAVE_VIBE_SENSOR
-  // #define USING_SERIAL_BRIDGE
+  #define USING_SERIAL_BRIDGE
   // We must define either CTRL_USB_SER or CTRL_UART. We'll use
   // CTRL_USB_SER for early testing, the CTRL_UART in production.
   // #define CTRL_USB_SER
@@ -89,7 +89,7 @@
 
 #if SUBBUS_BOARD_SN == 2 // Test configuration
 #define SUBBUS_BOARD_ID 6 // Accelerometer
-#define SUBBUS_BOARD_BOARD_TYPE "FOCAL Accelerometer"
+#define SUBBUS_BOARD_BOARD_TYPE "Accelerometer"
 #define SUBBUS_BOARD_INSTRUMENT_ID 10
 #define SUBBUS_BOARD_INSTRUMENT "FOCAL"
 #define SUBBUS_BOARD_LOCATION "Forward Roof Box"

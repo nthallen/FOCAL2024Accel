@@ -216,8 +216,8 @@ enum icm_state_t {
     s_mode1_init, s_mode1_init_1, s_mode1_init_2,
     s_mode1_operate, s_mode1_operate_1, s_mode1_operate_2,
     s_mode2_init, s_mode2_init_0, s_mode2_init_1, s_mode2_init_2,
-      s_mode2_init_3, s_mode2_init_4, s_mode2_init_4a, s_mode2_init_5,
-      s_mode2_init_6, s_mode2_init_7,
+      s_mode2_init_3, s_mode2_init_4, s_mode2_init_4a,
+      s_mode2_init_5, s_mode2_init_6, s_mode2_init_7,
     s_mode2_operate, s_mode2_operate_1, s_mode2_operate_2,
        s_mode2_operate_3, s_mode2_operate_4, s_mode2_operate_5,
        s_mode2_operate_6,
@@ -226,7 +226,8 @@ enum icm_state_t {
        s_mode2_shutdown_3, s_mode2_shutdown_4, s_mode2_shutdown_5,
        s_mode2_shutdown_6,
     s_set_accel_cfg, s_set_accel_cfg_0, s_set_accel_cfg_1, s_set_accel_cfg_2,
-    s_set_accel_cfg_1a, s_set_accel_cfg_1b, s_set_accel_cfg_1c,
+       s_set_accel_cfg_1a, s_set_accel_cfg_1b, s_set_accel_cfg_1c,
+       s_set_accel_cfg_1d,
     s_icm_read,
     s_no_state};
 
@@ -242,7 +243,7 @@ static uint8_t icm_accel_ibuf[6]; // Could/Should put in icm_poll_def struct?
 static uint8_t icm_int_status_buf;
 static uint16_t icm_fifo_count;
 static uint8_t icm_accel_cfg = ICM_MODE1_ACCEL_CFG; // Default, for mode 1.
-static uint8_t icm_accel_cfg_rb; // readback
+// static uint8_t icm_accel_cfg_rb; // readback
 
 static uint32_t endtime = 0x00000000; // Could/Should put in icm_poll_def struct?
 // static uint8_t whoami = 0x00;  // ICM20948 whoami response
@@ -252,6 +253,7 @@ static uint32_t endtime = 0x00000000; // Could/Should put in icm_poll_def struct
  * range.
  */
 static uint8_t icm_accel_config = 0x01;
+static uint16_t icm_accel_smplrt_div = 0;
 static uint8_t icm_fs_cfg = ICM_FS_2G;
 static uint16_t icm_new_mode = ICM_MODE_NO;
 static uint16_t icm_cur_mode = ICM_MODE_NO;
@@ -266,8 +268,9 @@ static void set_accel_fs(uint8_t fs) {
   icm_fs_cfg = fs&3;
   set_accel_cfg_cmd();
 }
-static void set_accel_cfg(uint8_t cfg) {
+static void set_accel_cfg(uint8_t cfg, uint16_t div) {
   icm_accel_config = cfg & 0xF9;
+  icm_accel_smplrt_div = div;
   set_accel_cfg_cmd();
 }
 static void set_cur_mode(uint8_t mode) {
@@ -388,6 +391,11 @@ static int icm_write_3(uint8_t reg_addr, uint8_t val1, uint8_t val2, enum icm_st
   return 0;
 }
 
+static int set_smplrt_div(uint16_t div, enum icm_state_t rtn)
+{
+  return icm_write_3(ACCEL_SMPLRT_DIV, (div >> 8) & 0xF, div & 0xFF, rtn);
+};
+
 static uint8_t *icm_read_dest;
 static int icm_read_size;
 static enum icm_state_t icm_read_next;
@@ -436,6 +444,9 @@ static void icm_calculate_maxg() {
  */
 static bool icm20948_poll(void) {
   if (!i2c_icm_enabled) return true;
+  if (sb_cache_was_read(i2c_icm_cache, I2C_ICM_STATUS_OFFSET)) {
+    sb_cache_update(i2c_icm_cache, I2C_ICM_STATUS_OFFSET, 0);
+  }
   switch (icm_state) {
     case s_mode0_init:
       set_cur_mode(ICM_MODE_NO);
@@ -451,7 +462,7 @@ static bool icm20948_poll(void) {
     case s_mode0_init_2:
       return icm_write_2(PWR_MGMT_2, 0x07, s_mode0_init_3);
     case s_mode0_init_3:
-      set_accel_cfg(ICM_MODE0_ACCEL_CFG);
+      set_accel_cfg(ICM_MODE0_ACCEL_CFG, ICM_MODE0_SMPLRT_DIV);
       return cfg_icm_accel(s_mode0_init_4);
     case s_mode0_init_4:
       return icm_write_2(LP_CONFIG, 0x40,s_mode0_init_5);
@@ -482,7 +493,7 @@ static bool icm20948_poll(void) {
     case s_mode1_init_1:  // Skip Check for ICM20948 for now
       return icm_write_2(PWR_MGMT_1, 0x09, s_mode1_init_2); // Just wake up
     case s_mode1_init_2:
-      set_accel_cfg(ICM_MODE1_ACCEL_CFG);
+      set_accel_cfg(ICM_MODE1_ACCEL_CFG, ICM_MODE1_SMPLRT_DIV);
       return cfg_icm_accel(s_mode1_operate);
 
     case s_mode1_operate:
@@ -512,7 +523,7 @@ static bool icm20948_poll(void) {
     case s_mode2_init_2:
       return icm_write_2(PWR_MGMT_2, 0x07, s_mode2_init_3);
     case s_mode2_init_3:
-      set_accel_cfg(ICM_MODE2_ACCEL_CFG);
+      set_accel_cfg(ICM_MODE2_ACCEL_CFG, ICM_MODE2_SMPLRT_DIV);
       return cfg_icm_accel(s_mode2_init_4);
     case s_mode2_init_4:
       return icm_write_2(INT_ENABLE_2, 1, s_mode2_init_4a);
@@ -559,7 +570,7 @@ static bool icm20948_poll(void) {
       return true;
 
     case s_mode2_shutdown:
-      set_accel_cfg(ICM_MODE0_ACCEL_CFG);
+      set_accel_cfg(ICM_MODE0_ACCEL_CFG, ICM_MODE0_SMPLRT_DIV);
       return cfg_icm_accel(s_mode2_shutdown_1);
     case s_mode2_shutdown_1:
       return icm_write_2(USER_CTRL, 0x00, s_mode2_shutdown_2);
@@ -602,9 +613,11 @@ static bool icm20948_poll(void) {
     case s_set_accel_cfg_0:
       return icm_write_2(REG_BANK_SEL, 2<<4, s_set_accel_cfg_1);
     case s_set_accel_cfg_1:
+      return set_smplrt_div(icm_accel_smplrt_div, s_set_accel_cfg_1d);
+    case s_set_accel_cfg_1d:
       return icm_write_2(ACCEL_CONFIG, icm_accel_cfg, s_set_accel_cfg_1a);
     case s_set_accel_cfg_1a:
-      return icm_read(ACCEL_CONFIG, &icm_accel_cfg_rb, 1, s_set_accel_cfg_1c);
+      // return icm_read(ACCEL_CONFIG, &icm_accel_cfg_rb, 1, s_set_accel_cfg_1c);
     case s_set_accel_cfg_1c:
       // sb_cache_update(i2c_icm_cache, I2C_ICM_FIFO_DIAG_OFFSET, icm_accel_cfg_rb);
       // fall through
@@ -695,8 +708,12 @@ static void i2c_icm_action(uint16_t offset) {
 }
 
 void i2c_icm_poll(void) {
+  static uint32_t timeout = 0;
   if (i2c_icm_enabled && I2C_ICM_txfr_complete) {
+    timeout = rtc_current_count + RTC_COUNTS_PER_SECOND;
     icm20948_poll(); // might need to make use of returned bool
+  } else if (timeout && rtc_current_count > timeout) {
+    // I2C_ICM_txfr_complete = true;
   }
 }
 

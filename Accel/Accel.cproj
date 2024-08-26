@@ -612,6 +612,7 @@
     <ListValues>
       <Value>DEBUG</Value>
       <Value>SUBBUS_BOARD_SN=2</Value>
+      <Value>CONF_SERCOM_2_I2CM_BAUD=100000</Value>
     </ListValues>
   </armgcc.compiler.symbols.DefSymbols>
   <armgcc.compiler.directories.IncludePaths>
@@ -727,6 +728,12 @@
     <OutputPath>bin\SN2\</OutputPath>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="commands.c">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="commands.h">
+      <SubType>compile</SubType>
+    </Compile>
     <Compile Include="Config\hpl_cmcc_config.h">
       <SubType>compile</SubType>
     </Compile>
