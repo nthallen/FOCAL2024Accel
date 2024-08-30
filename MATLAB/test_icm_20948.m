@@ -1,10 +1,22 @@
 %%
+clc
+% serial_port_clear;
+if exist('s') == 1
+  clear s
+end
+
 [s,port] = serial_port_init('',9600,2);
 addr.cmd = 48;
 %
 identify_feather(s);
 %
 [icm_mode,icm_fs] = report_icm_mode(s);
+%%
+thisres = test_fast_mode2(s,0,256); figure; plot(thisres.a);
+%%
+test_lockup(s,0);
+%%
+test_fast_mode3(s, 0, 250);
 %%
 test_mode_switch(s,0,0);
 %%
@@ -230,6 +242,13 @@ function ack = write_subbus_v(s, addr, value)
   end
 end
 
+function test_lockup(s, fs)
+  % Just 
+  fprintf(1, '\ntest_lockup(%d)\n', fs);
+  write_subbus(s, 48, 50+fs);
+  write_subbus(s, 48, 40+2);
+end
+
 function test_fast_mode(s, fs)
   fprintf(1, '\ntest_fast_mode(%d)\n', fs);
   n_FIFO0 = read_subbus(s, 103); %
@@ -239,7 +258,7 @@ function test_fast_mode(s, fs)
   dur = 0;
   tic;
   write_subbus(s, 48, 40+2);
-  for i=1:20
+  for i=1:200
     n_FIFO0 = read_subbus(s, 103); %
     n_FIFO = read_subbus(s, 101); % 0x65
     mode = bitand(read_subbus(s, 100),7);
