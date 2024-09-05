@@ -5,7 +5,7 @@ if exist('s') == 1
   clear s
 end
 
-[s,port] = serial_port_init('',9600,2);
+[s,port] = serial_port_init('',19200,2);
 addr.cmd = 48;
 %
 identify_feather(s);
