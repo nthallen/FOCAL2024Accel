@@ -16,6 +16,10 @@ thisres = test_fast_mode2(s,0,256); figure; plot(thisres.a);
 %%
 test_lockup(s,0);
 %%
+% Fast mode diagnostics: Just look at accumulating FIFO counts without
+% actually retrieving them
+test_fast_mode(s,0);
+%%
 test_fast_mode3(s, 0, 250);
 %%
 test_mode_switch(s,0,0);
@@ -31,10 +35,7 @@ test_slow_mode(s,3)
 %%
 % serial_port_clear;
 clear s
-%%
-% Fast mode diagnostics: Just look at accumulating FIFO counts without
-% actually retrieving them
-test_fast_mode(s,0);
+
 %%
 identify_feather(s);
 [icm_mode,icm_fs] = report_icm_mode(s);
@@ -172,7 +173,7 @@ function res = test_fast_mode2(s, fs, N)
   %   internal diagnostic (0x67)
   %   FIFO count (0x65)
   %   nrows (FIFO count/3)
-  fprintf(1, '.');
+  fprintf(1, 'test_fast_mode2(%d,%d)\n', fs, N);
   res.a = zeros(N,3);
   res.stats = zeros(N,5);
   Nread = 0;
@@ -238,7 +239,7 @@ end
 function ack = write_subbus_v(s, addr, value)
   [ack,line] = write_subbus(s, addr, value);
   if ack == -2
-    fprintf(1,'ack -2 on write_subbus: "%s"', line);
+    fprintf(1,'ack -2 on write_subbus: "%s"\n', line);
   end
 end
 
@@ -251,30 +252,54 @@ end
 
 function test_fast_mode(s, fs)
   fprintf(1, '\ntest_fast_mode(%d)\n', fs);
-  n_FIFO0 = read_subbus(s, 103); %
+  % n_FIFO0 = read_subbus(s, 103); %
   n_FIFO = read_subbus(s, 101); % 0x65
-  fprintf(1, '  n_FIFO: %d/%d\n', n_FIFO0, n_FIFO);
+  fprintf(1, '  n_FIFO: %d\n', n_FIFO);
   write_subbus(s, 48, 50+fs);
   dur = 0;
   tic;
+  last_report = toc;
   write_subbus(s, 48, 40+2);
-  for i=1:200
-    n_FIFO0 = read_subbus(s, 103); %
+  n_FIFO0 = 0;
+  increasing = 1;
+  mode_nonzero = false;
+  while 1
+    % n_FIFO0 = read_subbus(s, 103); %
     n_FIFO = read_subbus(s, 101); % 0x65
     mode = bitand(read_subbus(s, 100),7);
-    if mode == 0
+    this_report = toc;
+    if (~increasing) && (n_FIFO > n_FIFO0)
+      last_report = this_report;
+      fprintf(1, '%f: mode: %d n_FIFO: %d increasing\n', last_report, mode, n_FIFO);
+      increasing = 1;
+    elseif increasing && n_FIFO == n_FIFO0
+      last_report = this_report;
+      fprintf(1, '%f: mode: %d n_FIFO: %d stopped\n', last_report, mode, n_FIFO);
+      increasing = 0;
+    elseif this_report > last_report+30
+      fprintf(1, '%f: mode: %d n_FIFO: %d\n', this_report, mode, n_FIFO);
+      last_report = last_report+30;
+    end
+    n_FIFO0 = n_FIFO;
+    if ~mode_nonzero && (mode ~= 0)
+      mode_nonzero = true;
+    end
+    if mode_nonzero && (mode == 0)
       dur = toc;
       break;
     end
-    fprintf(1, '  %2d: n_FIFO: %d/%d mode: %d\n', i, n_FIFO0, n_FIFO, mode);
+    if this_report > 100 && mode == 0
+      fprintf(1, '%f: mode: %d n_FIFO: %d\n', last_report, mode, n_FIFO);
+    end
+    pause(1);
+    % fprintf(1, '  %2d: n_FIFO: %d mode: %d\n', i, n_FIFO, mode);
   end
   if dur == 0
     dur = toc;
   end
   write_subbus(s, 48, 40);
-  n_FIFO0 = read_subbus(s, 103); %
   n_FIFO = read_subbus(s, 101); % 0x65
-  fprintf(1, '  n_FIFO: %d/%d  dT = %f\n', n_FIFO0, n_FIFO, dur);
+  fprintf(1, '  n_FIFO: %d mode: %d dT = %f\n', n_FIFO, mode, dur);
 end
 
 function [icm_mode,icm_fs] = report_icm_mode(s, quiet)
@@ -290,10 +315,14 @@ function [icm_mode,icm_fs] = report_icm_mode(s, quiet)
     icm_mode = bitand(icm_mode_fs,7);
     icm_fs = bitand(icm_mode_fs,24)/8; % (icm_mode_fs%0x18)>>3
     switch icm_mode
-      case 0, mode_text = 'Idle';
-      case 1, mode_text = 'Slow';
-      case 2, mode_text = 'Fast';
-        OTHERWISE, mode_text = 'Unknown';
+      case 0
+        mode_text = 'Idle';
+      case 1
+        mode_text = 'Slow';
+      case 2
+        mode_text = 'Fast';
+      otherwise
+        mode_text = 'Unknown';
     end
     if ~quiet
       fprintf(1,'  ICM Mode %d: %s\n', icm_mode, mode_text);

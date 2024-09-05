@@ -3,7 +3,7 @@ function [ sps, T] = icm_20948(NreportLim)
   if nargin < 1
     NreportLim = NreportMax;
   end
-  [s,~] = serial_port_init('',115200,1);
+  [s,~] = serial_port_init('',9600,1);
   identify_feather(s);
 
   Fs = 20; % Based on MATLAB cal 3/12/24 was 566

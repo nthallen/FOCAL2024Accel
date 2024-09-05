@@ -134,7 +134,7 @@ static uint16_t fifo_allocate(uint16_t n_words) {
   int available;
   if (icm_fifo.nw == 0) {
     assert(icm_fifo.head == icm_fifo.tail,__FILE__,__LINE__);
-    icm_fifo.head = icm_fifo.tail = 0;
+    // icm_fifo.head = icm_fifo.tail = 0;
     icm_fifo.status = 0;
     available = I2C_ICM_FIFO_SIZE;
   } if (icm_fifo.status & I2C_ICM_FIFO_WRAPPED) {
@@ -179,19 +179,30 @@ static void i2c_icm_fifo_commit(uint16_t n_words) {
 static void i2c_icm_fifo_consume(int N) {
   if (N == 0) {
     return;
-  } else if (N >= icm_fifo.nw) {
-    fifo_init();
   } else {
-    int n_left = I2C_ICM_FIFO_SIZE-icm_fifo.head;
-    if (N >= n_left) {
+    if (icm_fifo.status & I2C_ICM_FIFO_WRAPPED) {
+      int n_left = I2C_ICM_FIFO_SIZE-icm_fifo.head;
+      if (N >= n_left) {
+        N -= n_left;
+        icm_fifo.nw -= n_left;
+        icm_fifo.head = 0;
+        icm_fifo.status &= ~(I2C_ICM_FIFO_FULL|I2C_ICM_FIFO_WRAPPED);
+      } else {
+        icm_fifo.nw -= N;
+        icm_fifo.head += N;
+        icm_fifo.status &= ~I2C_ICM_FIFO_FULL;
+        N = 0;
+      }
+    }
+    // We are guaranteed not to be full.
+    // Also won't be wrapped if N>0
+    if (N) {
+      int n_left = icm_fifo.tail-icm_fifo.head;
+      if (n_left > N)
+        n_left = N;
       N -= n_left;
       icm_fifo.nw -= n_left;
-      icm_fifo.head = 0;
-      icm_fifo.status &= ~(I2C_ICM_FIFO_FULL|I2C_ICM_FIFO_WRAPPED);
-    }
-    if (N) {
-      icm_fifo.nw -= N;
-      icm_fifo.head += N;
+      icm_fifo.head += n_left;
       icm_fifo.status &= ~I2C_ICM_FIFO_FULL;
     }
   }
@@ -203,7 +214,7 @@ static uint16_t i2c_icm_fifo_pop(void) {
     val = 0;
     // set underflow bit
   } else {
-    val = icm_fifo.fifo[icm_fifo.head++];
+    val = icm_fifo.fifo[icm_fifo.head];
     i2c_icm_fifo_consume(1);
   }
   return val;
@@ -516,7 +527,7 @@ static bool icm20948_poll(void) {
       fifo_init();
       icm_shutdown_mode = s_mode2_shutdown;
       return icm_write_2(REG_BANK_SEL, 0, s_mode2_init_0);
-    case s_mode2_init_0:
+    case s_mode2_init_0: // These 3 could be combined into one icm_write_4() call
       return icm_write_2(LP_CONFIG, 0x20, s_mode2_init_1);
     case s_mode2_init_1:
       return icm_write_2(PWR_MGMT_1, 0x09, s_mode2_init_2);
@@ -552,10 +563,10 @@ static bool icm20948_poll(void) {
       icm_fifo_count &= 0x1FFF;
       icm_fifo_count /= 2; // Now in words
       icm_fifo_count = fifo_allocate(icm_fifo_count);
-      icm_fifo_count /= I2C_ICM_FIFO_WORDS_PER_SAMPLE; // Now complete in records
+      // icm_fifo_count /= I2C_ICM_FIFO_WORDS_PER_SAMPLE; // Now complete in records
       if (icm_fifo_count) {
         return icm_read(FIFO_R_W, (uint8_t*)&icm_fifo.fifo[icm_fifo.tail],
-          icm_fifo_count*6, s_mode2_operate_6);
+          icm_fifo_count*2, s_mode2_operate_6);
       } else {
         icm_state = s_mode2_operate;
         return true;
@@ -563,7 +574,7 @@ static bool icm20948_poll(void) {
     case s_mode2_operate_6:
       sb_cache_update(i2c_icm_cache, I2C_ICM_FIFO_DIAG_OFFSET,
          icm_fifo_count+i2c_icm_cache[I2C_ICM_FIFO_DIAG_OFFSET].cache);
-      i2c_icm_fifo_commit(icm_fifo_count*3);
+      i2c_icm_fifo_commit(icm_fifo_count); // number of words
       if (icm_cur_mode == ICM_MODE_MAXG)
         icm_calculate_maxg();
       icm_state = s_mode2_operate;
